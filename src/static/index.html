@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            padding: 2rem 0;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(30,41,59,1) 0%, rgba(15,23,42,0) 100%);
+        }
+
+        header h1 {
+            font-weight: 700;
+            margin: 0;
+            font-size: 2.5rem;
+            background: -webkit-linear-gradient(45deg, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        main {
+            width: 100%;
+            max-width: 800px;
+            padding: 0 2rem 2rem 2rem;
+            box-sizing: border-box;
+        }
+
+        .auth-section {
+            background-color: var(--surface);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .auth-section input {
+            flex-grow: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .auth-section input:focus {
+            border-color: var(--primary);
+        }
+
+        .dropzone {
+            background-color: var(--surface);
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--primary);
+            background-color: var(--surface-hover);
+        }
+
+        .dropzone .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .dropzone p {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .results {
+            margin-top: 2rem;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .entity-chip {
+            display: inline-block;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(30, 41, 59, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+            z-index: 10;
+            border-radius: 16px;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .sentiment-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .sentiment-Positive { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .sentiment-Negative { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .sentiment-Neutral { background-color: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>AI Document Analyzer</h1>
+        <p>Intelligently extract and summarize PDF, DOCX, and images instantly.</p>
+    </header>
+
+    <main>
+        <div class="auth-section">
+            <svg style="width:24px;height:24px;color:var(--text-muted)" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,17A2,2 0 0,0 10,15C10,13.89 10.9,13 12,13A2,2 0 0,0 14,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" />
+            </svg>
+            <input type="password" id="apiKeyInp" placeholder="Enter your x-api-key testing token..." />
+        </div>
+
+        <div class="dropzone" id="dropzone">
+            <div class="loading" id="loadingOverlay">
+                <div class="spinner"></div>
+                <p style="margin-top: 1rem; color: #fff;">Analyzing with Gemini 2.0 Flash...</p>
+            </div>
+            
+            <div class="icon">📄</div>
+            <p>Drag & Drop your file here to scan</p>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem; opacity: 0.6;">Supports PDF, DOCX, PNG, JPG</p>
+            <input type="file" id="fileInput" accept=".pdf,.docx,.jpg,.jpeg,.png">
+        </div>
+
+        <div class="results" id="resultsArea">
+            <div class="card">
+                <h3>Executive Summary</h3>
+                <p id="resSummary" style="line-height: 1.6;"></p>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Overall Sentiment</h3>
+                    <div id="resSentiment" class="sentiment-badge"></div>
+                </div>
+                <div class="card">
+                    <h3>Metadata</h3>
+                    <p><strong>File:</strong> <span id="resFile"></span></p>
+                    <p><strong>Status:</strong> <span id="resStatus"></span></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Extracted Entities</h3>
+                <div class="grid-2" style="margin-top:1rem;">
+                    <div>
+                        <h4 style="margin:0 0 0.5rem 0; color:var(--text-muted)">Organizations</h4>
+                        <div id="resOrg"></div>
+                    </div>
+                    <div>
+                        <h4 style="margin:0 0 0.5rem 0; color:var(--text-muted)">Names</h4>
+                        <div id="resNames"></div>
+                    </div>
+                    <div>
+                        <h4 style="margin:1rem 0 0.5rem 0; color:var(--text-muted)">Amounts</h4>
+                        <div id="resAmounts"></div>
+                    </div>
+                    <div>
+                        <h4 style="margin:1rem 0 0.5rem 0; color:var(--text-muted)">Dates</h4>
+                        <div id="resDates"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const resultsArea = document.getElementById('resultsArea');
+        const apiKeyInp = document.getElementById('apiKeyInp');
+
+        // Drag and drop setup
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.remove('dragover'), false);
+        });
+
+        dropzone.addEventListener('drop', handleDrop, false);
+        dropzone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        function handleDrop(e) {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+            const apiKey = apiKeyInp.value.trim();
+            
+            if (!apiKey) {
+                alert("Please enter your API Key first!");
+                apiKeyInp.focus();
+                return;
+            }
+
+            // Get file extension
+            let ext = file.name.split('.').pop().toLowerCase();
+            if (['jpg','jpeg','png'].includes(ext)) ext = 'image';
+            
+            // Read file as Base64
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function () {
+                // Strip the Data URL prefix (e.g. data:application/pdf;base64,)
+                const base64String = reader.result.split(',')[1];
+                sendToAPI(file.name, ext, base64String, apiKey);
+            };
+        }
+
+        async function sendToAPI(fileName, fileType, fileBase64, apiKey) {
+            loadingOverlay.classList.add('active');
+            resultsArea.classList.remove('active');
+
+            try {
+                const response = await fetch('/api/document-analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey
+                    },
+                    body: JSON.stringify({
+                        fileName: fileName,
+                        fileType: fileType,
+                        fileBase64: fileBase64
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || data.detail || "Unknown Server Error");
+                }
+
+                populateResults(data);
+
+            } catch (err) {
+                alert("Error analyzing document: " + err.message);
+            } finally {
+                loadingOverlay.classList.remove('active');
+            }
+        }
+
+        function populateResults(data) {
+            document.getElementById('resSummary').textContent = data.summary || "No summary available.";
+            document.getElementById('resFile').textContent = data.fileName;
+            document.getElementById('resStatus').textContent = data.status;
+            
+            // Sentiment
+            const sent = document.getElementById('resSentiment');
+            sent.textContent = data.sentiment;
+            sent.className = 'sentiment-badge sentiment-' + data.sentiment;
+
+            // Entities rendering wrapper
+            const renderChips = (arr, elId) => {
+                const el = document.getElementById(elId);
+                el.innerHTML = '';
+                if (!arr || arr.length === 0) {
+                    el.innerHTML = '<span style="color:var(--text-muted);font-style:italic;">None found</span>';
+                    return;
+                }
+                arr.forEach(item => {
+                    const s = document.createElement('span');
+                    s.className = 'entity-chip';
+                    s.textContent = item;
+                    el.appendChild(s);
+                });
+            };
+
+            const entities = data.entities || {};
+            renderChips(entities.organizations, 'resOrg');
+            renderChips(entities.names, 'resNames');
+            renderChips(entities.amounts, 'resAmounts');
+            renderChips(entities.dates, 'resDates');
+
+            resultsArea.classList.add('active');
+        }
+    </script>
+</body>
+</html>

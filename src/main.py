@@ -1,7 +1,7 @@
 import os
 import base64
 from fastapi import FastAPI, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -35,7 +35,8 @@ def verify_api_key(request: Request):
 
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "Document Analyzer API is running. Route to /api/document-analyze."}
+    # Serve the Beautiful Drag and Drop UI
+    return FileResponse("src/static/index.html")
 
 @app.post("/api/document-analyze")
 async def analyze_document(

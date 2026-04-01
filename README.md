@@ -47,3 +47,18 @@ This API serves as an intelligent document processing system that automatically 
     - If it's an image string, it gets processed via Tesseract OCR visual analysis.
 - **LLM Synthesis layer**: The parsed plain-text from the extractor is forwarded to the `google/gemini-2.0-flash-001` LLM. Instead of using flat generic text instructions, the system relies on structured schema engineering via the prompt string and `json_object` enforcement. It explicitly tasks the model to return exactly four arrays (`names`, `dates`, `organizations`, `amounts`) within the `entities` node.
 - **Sentiment & Summarization**: Processed concurrently by the same LLM transaction on the input context window before being aggregated. The API ensures the output JSON adheres strictly to the required payload schema required by the grading script without any hardcoded test-case loopholes.
+
+## Architecture Overview
+The application follows a clean 3-tier REST architecture:
+1. **Frontend UI (Static Mount)**: A modern HTML/JS client hosted on the root `/` endpoint that allows drag-and-drop file testing. It securely encodes files to Base64 in the browser and sends them to the REST API.
+2. **FastAPI Routing Layer**: Located in `src/main.py`, this layer handles request validation via Pydantic (`DocumentRequest`), validates the `x-api-key` header against the environment secrets, and decodes the incoming Base64 payload back into bytes.
+3. **Extraction & Synthesis Worker**: The bytes are routed through `src/utils/extractors.py` where specialized parsers (PyMuPDF for PDF, python-docx for Word, PyTesseract for Images) extract raw text. The text is passed to `src/utils/ai_analyzer.py`, which connects to OpenRouter and leverages Gemini 2.0 Flash to map the unstructured text into a highly structured Named Entity schema.
+
+## AI Tools Used
+- **Google Gemini 2.0 Flash (via OpenRouter)**: Used strictly as the core synthesis engine for the document summarization, sentiment analysis, and Named Entity Recognition (NER) pipeline.
+- **DeepMind Antigravity / Agentic Assistant**: Utilized as an AI pair-programmer during the Hackathon to assist with Python boilerplate generation, Dockerfile configuration debugging (specifically repairing Linux `libgl1` Tesseract OCR dependencies), and constructing standard Markdown documentation.
+
+## Known Limitations
+- **Token Constraints**: Extremely massive documents (over 100 pages) may exceed the context window limitations of the Gemini 2.0 Flash model, potentially leading to truncated summarization.
+- **Image Legibility**: The PyTesseract OCR engine relies heavily on visual clarity. Blurry, low-resolution images or heavily skewed mobile photos may result in garbled text extraction, directly impacting the AI's ability to accurately find Entities.
+- **Synchronous Bottlenecks**: The API currently processes documents synchronously. While fast, an influx of hundreds of simultaneous large PDF requests could cause connection timeouts without a dedicated background Celery worker queue.
