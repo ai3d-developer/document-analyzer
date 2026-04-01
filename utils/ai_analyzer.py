@@ -25,7 +25,7 @@ def analyze_document_text(text: str) -> dict:
 
     try:
         completion = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model="google/gemini-2.0-flash-001",
             messages=[
                 {"role": "system", "content": system_instruction},
                 {"role": "user", "content": text}
