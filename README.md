@@ -12,8 +12,8 @@ This API serves as an intelligent document processing system that automatically 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/ai3d-developer/document-analyzer.git
+   cd document-analyzer
    ```
 
 2. **Install dependencies**
@@ -29,11 +29,15 @@ This API serves as an intelligent document processing system that automatically 
    OPENROUTER_API_KEY=your_openrouter_api_key_here
    ```
 
-4. **Run the application**
+4. **Run the application (Local)**
    ```bash
    uvicorn src.main:app --host 0.0.0.0 --port 8000
    ```
-   *Your API will be active at: `http://localhost:8000/api/document-analyze`*
+   *Your local API will be active at: `http://localhost:8000/api/document-analyze`*
+
+5. **Live API URL**
+   The deployed application is active for evaluation testing at:
+   `https://document-analyzer-n1ca.onrender.com/api/document-analyze`
 
 ## Approach
 
