@@ -33,41 +33,23 @@ def verify_api_key(request: Request):
 
     return api_key_header.strip()
 
-@app.get("/")
-def read_root():
-    # Serve the Beautiful Drag and Drop UI
-    return FileResponse("src/static/index.html")
 
-@app.post("/api/document-analyze")
-async def analyze_document(
-    doc_req: DocumentRequest,
-    token: str = Depends(verify_api_key)
-):
-    """
-    Endpoint for Document Analysis & Extraction.
-    Receives JSON body matching Hackathon constraints.
-    """
+async def perform_analysis(doc_req: DocumentRequest):
+    """Internal helper to handle document extraction and AI synthesis."""
     try:
         # 1. Decode Base64 Content back into Raw Bytes
         file_bytes = base64.b64decode(doc_req.fileBase64)
         
         # 2. Extract Text based on file type
-        try:
-            extracted_text = extract_text(file_bytes, doc_req.fileName, doc_req.fileType)
-        except Exception as e:
-            return JSONResponse(status_code=400, content={"status": "error", "error": f"Failed to extract document: {str(e)}"})
+        extracted_text = extract_text(file_bytes, doc_req.fileName, doc_req.fileType)
             
         if not extracted_text:
              return JSONResponse(status_code=400, content={"status": "error", "error": "Document contains no readable text."})
         
         # 3. Analyze Text using AI (Gemini 2.0 Flash on OpenRouter)
-        try:
-             ai_result = analyze_document_text(extracted_text)
-        except Exception as e:
-             return JSONResponse(status_code=500, content={"status": "error", "error": str(e)})
+        ai_result = analyze_document_text(extracted_text)
 
         # Return standardized JSON Structure explicitly requested by Grading Rubric
-        # e.g., keys: status, fileName, summary, entities (names, dates, organizations, amounts), sentiment
         return {
             "status": "success",
             "fileName": doc_req.fileName,
@@ -82,4 +64,23 @@ async def analyze_document(
         }
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"status": "error", "error": "Internal server error during analysis.", "details": str(e)})
+        return JSONResponse(status_code=500, content={"status": "error", "error": str(e)})
+
+@app.get("/")
+def read_root_get():
+    """Serves the Beautiful Drag and Drop UI for manual testing."""
+    # Serve the Beautiful Drag and Drop UI
+    return FileResponse("src/static/index.html")
+
+@app.post("/")
+async def read_root_post(doc_req: DocumentRequest, token: str = Depends(verify_api_key)):
+    """Handles POST to root / to avoid 'Method Not Allowed' on base URL submissions."""
+    return await perform_analysis(doc_req)
+
+@app.post("/api/document-analyze")
+async def analyze_document(
+    doc_req: DocumentRequest,
+    token: str = Depends(verify_api_key)
+):
+    """Endpoint for Document Analysis & Extraction (backward compatibility)."""
+    return await perform_analysis(doc_req)
