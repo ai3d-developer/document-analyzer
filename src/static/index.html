@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,7 +36,7 @@
             width: 100%;
             padding: 2rem 0;
             text-align: center;
-            background: linear-gradient(180deg, rgba(30,41,59,1) 0%, rgba(15,23,42,0) 100%);
+            background: linear-gradient(180deg, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 0) 100%);
         }
 
         header h1 {
@@ -99,7 +100,8 @@
             overflow: hidden;
         }
 
-        .dropzone:hover, .dropzone.dragover {
+        .dropzone:hover,
+        .dropzone.dragover {
             border-color: var(--primary);
             background-color: var(--surface-hover);
         }
@@ -163,10 +165,13 @@
             font-size: 0.875rem;
             margin: 0.25rem;
         }
-        
+
         .loading {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(30, 41, 59, 0.9);
             display: none;
             flex-direction: column;
@@ -190,8 +195,23 @@
             animation: spin 1s infinite linear;
         }
 
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         .sentiment-badge {
             display: inline-block;
@@ -199,11 +219,24 @@
             border-radius: 8px;
             font-weight: 600;
         }
-        .sentiment-Positive { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
-        .sentiment-Negative { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
-        .sentiment-Neutral { background-color: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+
+        .sentiment-Positive {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .sentiment-Negative {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .sentiment-Neutral {
+            background-color: rgba(148, 163, 184, 0.2);
+            color: #cbd5e1;
+        }
     </style>
 </head>
+
 <body>
 
     <header>
@@ -214,7 +247,8 @@
     <main>
         <div class="auth-section">
             <svg style="width:24px;height:24px;color:var(--text-muted)" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12,17A2,2 0 0,0 10,15C10,13.89 10.9,13 12,13A2,2 0 0,0 14,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" />
+                <path fill="currentColor"
+                    d="M12,17A2,2 0 0,0 10,15C10,13.89 10.9,13 12,13A2,2 0 0,0 14,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" />
             </svg>
             <input type="password" id="apiKeyInp" placeholder="Enter your x-api-key testing token..." />
         </div>
@@ -222,9 +256,9 @@
         <div class="dropzone" id="dropzone">
             <div class="loading" id="loadingOverlay">
                 <div class="spinner"></div>
-                <p style="margin-top: 1rem; color: #fff;">Analyzing with Gemini 2.0 Flash...</p>
+                <p style="margin-top: 1rem; color: #fff;">Analyzing with AI"...</p>
             </div>
-            
+
             <div class="icon">📄</div>
             <p>Drag & Drop your file here to scan</p>
             <p style="font-size: 0.875rem; margin-top: 0.5rem; opacity: 0.6;">Supports PDF, DOCX, PNG, JPG</p>
@@ -312,7 +346,7 @@
             if (files.length === 0) return;
             const file = files[0];
             const apiKey = apiKeyInp.value.trim();
-            
+
             if (!apiKey) {
                 alert("Please enter your API Key first!");
                 apiKeyInp.focus();
@@ -321,8 +355,8 @@
 
             // Get file extension
             let ext = file.name.split('.').pop().toLowerCase();
-            if (['jpg','jpeg','png'].includes(ext)) ext = 'image';
-            
+            if (['jpg', 'jpeg', 'png'].includes(ext)) ext = 'image';
+
             // Read file as Base64
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -352,7 +386,7 @@
                 });
 
                 const data = await response.json();
-                
+
                 if (!response.ok) {
                     throw new Error(data.error || data.detail || "Unknown Server Error");
                 }
@@ -370,7 +404,7 @@
             document.getElementById('resSummary').textContent = data.summary || "No summary available.";
             document.getElementById('resFile').textContent = data.fileName;
             document.getElementById('resStatus').textContent = data.status;
-            
+
             // Sentiment
             const sent = document.getElementById('resSentiment');
             sent.textContent = data.sentiment;
@@ -402,4 +436,5 @@
         }
     </script>
 </body>
+
 </html>

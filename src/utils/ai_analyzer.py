@@ -22,7 +22,7 @@ def analyze_document_text(text: str) -> dict:
         "   IMPORTANT: ONLY extract words or phrases that physically exist in the source text. NEVER guess or hallucinate entities.\n"
         "   - 'names': List of people or human groups explicitly mentioned in the text.\n"
         "   - 'dates': List of exact dates explicitly mentioned in the text.\n"
-        "   - 'organizations': List organizations strictly from the document. Include: Company names, employers, institutions (schools, universities), brands, and event names. EXCLUDE: software/tools (e.g., Adobe, Figma), skills or technologies (e.g., Python, React), generic words, and UI text. ONLY return real organizations explicitly mentioned in the content. Do not guess or hallucinate.\n"
+        "   - 'organizations': Extract organizations strictly from the document. Include ONLY specific named institutions, agencies, banks, or organizations (e.g., 'Google', 'Stanford University'). EXCLUDE: systems (e.g., 'banking systems', 'platforms'), generic categories (e.g., 'financial institutions', 'service providers'), broad industry terms, and non-specific or descriptive phrases. Prefer specific entities over generic terms. If both exist, ONLY return specific ones. Do not guess or hallucinate.\n"
         "   - 'amounts': List of monetary amounts explicitly mentioned in the text.\n"
         "3. 'sentiment': The overall sentiment of the text. Must be exactly 'Positive', 'Negative', or 'Neutral'.\n"
         "You MUST output valid JSON only, without any markdown blocks or additional text."
