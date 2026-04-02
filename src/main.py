@@ -2,6 +2,7 @@ import os
 import base64
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse, FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -12,6 +13,15 @@ from src.utils.extractors import extract_text
 from src.utils.ai_analyzer import analyze_document_text
 
 app = FastAPI(title="AI-Powered Document Analysis API")
+
+# Add CORS Middleware to handle Cross-Origin Preflight (OPTIONS) requests from Judge Dashboards
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class DocumentRequest(BaseModel):
     fileName: str
